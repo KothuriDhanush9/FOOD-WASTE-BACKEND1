@@ -19,28 +19,44 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/api/status', (req, res) => res.json({ status: 'ok', message: 'Backend is running' }));
+// ✅ ROOT ROUTE (important for Railway browser test)
+app.get('/', (req, res) => {
+  res.send('Backend is running 🚀');
+});
+
+// Existing route
+app.get('/api/status', (req, res) =>
+  res.json({ status: 'ok', message: 'Backend is running' })
+);
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/food', foodRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'API endpoint not found. Check the route and HTTP method.' });
+// 404
+app.use((req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
 });
 
+// Error handler
 app.use(errorHandler);
 
+// Start server
 const startServer = async () => {
-  await connectMySQL();
+  try {
+    await connectMySQL();
+    console.log('✅ MySQL connected');
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Server startup error:', error.message);
+    process.exit(1);
+  }
 };
 
-startServer().catch((error) => {
-  console.error('Server startup error:', error.message);
-  process.exit(1);
-});
+startServer();
